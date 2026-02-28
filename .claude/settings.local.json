@@ -5,7 +5,8 @@
       "Bash(sqlite3 \"/Users/zanet/Desktop/自己开的项目/待完成-快递聚合系统/data/shipment-hub.db\" \"SELECT * FROM shipments LIMIT 5;\")",
       "Bash(sqlite3 \"/Users/zanet/Desktop/自己开的项目/待完成-快递聚合系统/data/shipment-hub.db\" \"SELECT COUNT\\(*\\) as total FROM shipments;\")",
       "mcp__zai-mcp-server__analyze_image",
-      "Bash(sqlite3 \"/Users/zanet/Desktop/自己开的项目/待完成-快递聚合系统/data/shipment-hub.db\" \"DELETE FROM tracking_events; DELETE FROM shipments;\"\n\necho \"=== 数据库已清空 ===\"\nsqlite3 \"/Users/zanet/Desktop/自己开的项目/待完成-快递聚合系统/data/shipment-hub.db\" \"SELECT COUNT\\(*\\) as count FROM shipments;\")"
+      "Bash(sqlite3 \"/Users/zanet/Desktop/自己开的项目/待完成-快递聚合系统/data/shipment-hub.db\" \"DELETE FROM tracking_events; DELETE FROM shipments;\"\n\necho \"=== 数据库已清空 ===\"\nsqlite3 \"/Users/zanet/Desktop/自己开的项目/待完成-快递聚合系统/data/shipment-hub.db\" \"SELECT COUNT\\(*\\) as count FROM shipments;\")",
+      "Bash(cd \"/Users/zanet/Desktop/自己开的项目/待完成-快递聚合系统\"\n\ngit add .\ngit status)"
     ]
   }
 }
