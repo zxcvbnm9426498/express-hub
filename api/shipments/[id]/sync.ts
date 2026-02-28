@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { sql } from '@vercel/postgres'
-import { initDatabase, nowLabel } from '../lib/database'
-import { queryLogistics } from '../lib/logistics'
-import { getShipmentById } from '../lib/shipments'
+import { initDatabase, nowLabel } from '../../lib/database.js'
+import { queryLogistics } from '../../lib/logistics.js'
+import { getShipmentById } from '../../lib/shipments.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS

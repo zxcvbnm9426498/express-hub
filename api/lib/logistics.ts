@@ -128,7 +128,7 @@ function normalizeEvents(list: KuaidiTraceItem[] | undefined): LogisticsEvent[] 
 function buildSnapshot(carrierCode: string, carrierName: string, payload: KuaidiQueryResp): LogisticsSnapshot {
   const events = normalizeEvents(payload.data)
   const latest = events[0]
-  const first = events.at(-1)
+  const first = events.length > 0 ? events[events.length - 1] : null
   const status = mapStateToStatus(payload.state, events.length > 0)
 
   return {
