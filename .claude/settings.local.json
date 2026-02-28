@@ -12,7 +12,9 @@
       "Bash(cd \"/Users/zanet/Desktop/自己开的项目/待完成-快递聚合系统\"\n\ngit add .\ngit commit -m \"fix: improve error handling and debug logging\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\"\n\ngit push)",
       "Bash(cd \"/Users/zanet/Desktop/自己开的项目/待完成-快递聚合系统\"\n\ngit commit -m \"fix: move lib to api/lib for Vercel compatibility\n\n- Move lib/ to api/lib/ for proper module resolution\n- Remove old server/ directory \\(no longer needed\\)\n- Fix import paths in API handlers\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\"\n\ngit push)",
       "Bash(cd \"/Users/zanet/Desktop/自己开的项目/待完成-快递聚合系统\"\n\ngit push origin main 2>&1)",
-      "Bash(cd \"/Users/zanet/Desktop/自己开的项目/待完成-快递聚合系统\"\n\ngit add .\ngit commit -m \"fix: resolve TypeScript build errors for Vercel\n\n- Replace .at\\(\\) with array indexing for ES compatibility\n- Add .js extensions to relative imports\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\"\n\ngit push origin main、)"
+      "Bash(cd \"/Users/zanet/Desktop/自己开的项目/待完成-快递聚合系统\"\n\ngit add .\ngit commit -m \"fix: resolve TypeScript build errors for Vercel\n\n- Replace .at\\(\\) with array indexing for ES compatibility\n- Add .js extensions to relative imports\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\"\n\ngit push origin main、)",
+      "Bash(cd \"/Users/zanet/Desktop/自己开的项目/待完成-快递聚合系统\"\ngit push origin main 2>&1)",
+      "Bash(cd \"/Users/zanet/Desktop/自己开的项目/待完成-快递聚合系统\"\n\ngit add .\ngit commit -m \"style: optimize mobile responsive design\n\n- 4-column compact stats band on mobile\n- Horizontal scrollable filter chips\n- Single column shipment cards with tight spacing\n- Bottom sheet modals for add/detail panels\n- Safe area inset support for notched devices\n- Improved touch targets and typography\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\"\n\ngit push origin main)"
     ]
   }
 }
