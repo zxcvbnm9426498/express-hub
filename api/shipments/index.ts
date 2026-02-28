@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { sql } from '@vercel/postgres'
-import { initDatabase, nowLabel, todayDate } from '../../lib/database'
-import { queryLogistics } from '../../lib/logistics'
-import { getShipmentById, fetchEventsForShipmentIds, mapRowToShipment, type ShipmentRow, type ShipmentStatus } from '../../lib/shipments'
+import { initDatabase, nowLabel, todayDate } from '../lib/database'
+import { queryLogistics } from '../lib/logistics'
+import { getShipmentById, fetchEventsForShipmentIds, mapRowToShipment, type ShipmentRow, type ShipmentStatus } from '../lib/shipments'
 
 const STATUS_SET = new Set<ShipmentStatus>(['已下单', '揽收中', '运输中', '派送中', '已签收', '异常'])
 
