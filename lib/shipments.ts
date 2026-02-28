@@ -1,5 +1,6 @@
 import { sql } from '@vercel/postgres'
-import type { ShipmentStatus } from './logistics'
+
+export type ShipmentStatus = '已下单' | '揽收中' | '运输中' | '派送中' | '已签收' | '异常'
 
 export interface ShipmentRow {
   id: number
