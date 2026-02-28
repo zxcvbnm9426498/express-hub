@@ -73,7 +73,7 @@ export async function fetchEventsForShipmentId(shipmentId: number): Promise<Trac
     WHERE shipment_id = ${shipmentId}
     ORDER BY id DESC
   `
-  return rows
+  return rows as TrackingEventRow[]
 }
 
 export async function fetchEventsForShipmentIds(shipmentIds: number[]): Promise<Map<number, TrackingEventRow[]>> {
@@ -81,15 +81,14 @@ export async function fetchEventsForShipmentIds(shipmentIds: number[]): Promise<
     return new Map()
   }
 
-  const { rows } = await sql<TrackingEventRow>`
-    SELECT id, shipment_id, event_time, location, detail
-    FROM tracking_events
-    WHERE shipment_id = ANY(${shipmentIds})
-    ORDER BY id DESC
-  `
+  // 使用 sql.query 方法处理数组参数
+  const placeholders = shipmentIds.map((_, i) => `$${i + 1}`).join(',')
+  const query = `SELECT id, shipment_id, event_time, location, detail FROM tracking_events WHERE shipment_id IN (${placeholders}) ORDER BY id DESC`
+
+  const { rows } = await sql.query(query, shipmentIds)
 
   const eventMap = new Map<number, TrackingEventRow[]>()
-  for (const event of rows) {
+  for (const event of rows as TrackingEventRow[]) {
     const list = eventMap.get(event.shipment_id)
     if (list) {
       list.push(event)

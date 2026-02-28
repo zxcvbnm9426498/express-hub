@@ -1,13 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { sql } from '@vercel/postgres'
-import { initDatabase, nowLabel, todayDate } from '../lib/database'
-import { queryLogistics } from '../lib/logistics'
-import { getShipmentById, fetchEventsForShipmentIds, mapRowToShipment, type ShipmentRow, type ShipmentStatus } from '../lib/shipments'
+import { initDatabase, nowLabel, todayDate } from '../../lib/database'
+import { queryLogistics } from '../../lib/logistics'
+import { getShipmentById, fetchEventsForShipmentIds, mapRowToShipment, type ShipmentRow, type ShipmentStatus } from '../../lib/shipments'
 
 const STATUS_SET = new Set<ShipmentStatus>(['已下单', '揽收中', '运输中', '派送中', '已签收', '异常'])
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
@@ -17,7 +16,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // 初始化数据库
     await initDatabase()
 
     if (req.method === 'GET') {
@@ -41,46 +39,42 @@ async function handleList(req: VercelRequest, res: VercelResponse) {
   const statusFilter = typeof req.query.status === 'string' ? req.query.status.trim() : ''
   const keyword = typeof req.query.q === 'string' ? req.query.q.trim() : ''
 
-  // 构建查询条件
-  const conditions: string[] = []
-  const params: (string | number)[] = []
-  let paramIndex = 1
+  // 构建查询
+  let countQuery: string
+  let dataQuery: string
+  let params: (string | number)[] = []
 
-  if (statusFilter && STATUS_SET.has(statusFilter as ShipmentStatus)) {
-    conditions.push(`status = $${paramIndex++}`)
-    params.push(statusFilter)
-  }
-
-  if (keyword) {
+  if (statusFilter && keyword) {
     const like = `%${keyword}%`
-    conditions.push(`(tracking_number ILIKE $${paramIndex} OR carrier ILIKE $${paramIndex} OR latest_context ILIKE $${paramIndex} OR route_from ILIKE $${paramIndex} OR route_to ILIKE $${paramIndex++})`)
-    params.push(like)
+    countQuery = `SELECT COUNT(*) AS total FROM shipments WHERE status = $1 AND (tracking_number ILIKE $2 OR carrier ILIKE $2 OR latest_context ILIKE $2)`
+    dataQuery = `SELECT id, carrier, carrier_code, tracking_number, shipping_date, route_from, route_to, status, latest_update, latest_context, eta, created_at, updated_at FROM shipments WHERE status = $1 AND (tracking_number ILIKE $2 OR carrier ILIKE $2 OR latest_context ILIKE $2) ORDER BY created_at DESC, id DESC LIMIT $3 OFFSET $4`
+    params = [statusFilter, like, pageSize, (page - 1) * pageSize]
+  } else if (statusFilter) {
+    countQuery = `SELECT COUNT(*) AS total FROM shipments WHERE status = $1`
+    dataQuery = `SELECT id, carrier, carrier_code, tracking_number, shipping_date, route_from, route_to, status, latest_update, latest_context, eta, created_at, updated_at FROM shipments WHERE status = $1 ORDER BY created_at DESC, id DESC LIMIT $2 OFFSET $3`
+    params = [statusFilter, pageSize, (page - 1) * pageSize]
+  } else if (keyword) {
+    const like = `%${keyword}%`
+    countQuery = `SELECT COUNT(*) AS total FROM shipments WHERE tracking_number ILIKE $1 OR carrier ILIKE $1 OR latest_context ILIKE $1`
+    dataQuery = `SELECT id, carrier, carrier_code, tracking_number, shipping_date, route_from, route_to, status, latest_update, latest_context, eta, created_at, updated_at FROM shipments WHERE tracking_number ILIKE $1 OR carrier ILIKE $1 OR latest_context ILIKE $1 ORDER BY created_at DESC, id DESC LIMIT $2 OFFSET $3`
+    params = [like, pageSize, (page - 1) * pageSize]
+  } else {
+    countQuery = `SELECT COUNT(*) AS total FROM shipments`
+    dataQuery = `SELECT id, carrier, carrier_code, tracking_number, shipping_date, route_from, route_to, status, latest_update, latest_context, eta, created_at, updated_at FROM shipments ORDER BY created_at DESC, id DESC LIMIT $1 OFFSET $2`
+    params = [pageSize, (page - 1) * pageSize]
   }
 
-  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
-
-  // 统计总数
-  const countResult = await sql`SELECT COUNT(*) AS total FROM shipments ${sql.unsafe(whereClause)}`
+  // 执行查询
+  const countResult = await sql.query(countQuery, statusFilter && keyword ? [statusFilter, `%${keyword}%`] : statusFilter ? [statusFilter] : keyword ? [`%${keyword}%`] : [])
   const total = Number(countResult.rows[0]?.total || 0)
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   const currentPage = Math.min(page, totalPages)
-  const offset = (currentPage - 1) * pageSize
 
-  // 查询数据
-  const dataResult = await sql<ShipmentRow>`
-    SELECT id, carrier, carrier_code, tracking_number, shipping_date,
-           route_from, route_to, status, latest_update, latest_context,
-           eta, created_at, updated_at
-    FROM shipments
-    ${sql.unsafe(whereClause)}
-    ORDER BY created_at DESC, id DESC
-    LIMIT ${pageSize} OFFSET ${offset}
-  `
+  const dataResult = await sql.query(dataQuery, params) as { rows: ShipmentRow[] }
 
   // 查询事件
   const shipmentIds = dataResult.rows.map((r) => r.id)
   const eventMap = await fetchEventsForShipmentIds(shipmentIds)
-
   const shipments = dataResult.rows.map((row) => mapRowToShipment(row, eventMap.get(row.id) || []))
 
   // 统计汇总
@@ -115,7 +109,6 @@ async function handleCreate(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ message: '请填写有效的快递单号。' })
   }
 
-  // 查询物流
   const snapshot = await queryLogistics(trackingNumberTrimmed, {
     key: process.env.KD100_KEY,
     customer: process.env.KD100_CUSTOMER,
@@ -130,7 +123,6 @@ async function handleCreate(req: VercelRequest, res: VercelResponse) {
   const shippingDate = todayDate()
   const latestUpdate = snapshot.latestUpdate === '-' ? now : snapshot.latestUpdate
 
-  // 插入运单
   let shipmentId: number
   try {
     const insertResult = await sql`
@@ -145,15 +137,14 @@ async function handleCreate(req: VercelRequest, res: VercelResponse) {
       )
       RETURNING id
     `
-    shipmentId = insertResult.rows[0].id
+    shipmentId = insertResult.rows[0].id as number
   } catch (error: any) {
-    if (error.code === '23505') { // unique violation
+    if (error.code === '23505') {
       return res.status(409).json({ message: '该运单号已存在。' })
     }
     throw error
   }
 
-  // 插入事件
   const events = snapshot.events.length > 0 ? snapshot.events : [{ time: latestUpdate, location: '物流系统', detail: snapshot.latestContext }]
   for (const event of events) {
     await sql`
