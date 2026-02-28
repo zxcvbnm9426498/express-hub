@@ -643,6 +643,11 @@ select:focus {
 .compose-panel {
   position: sticky;
   top: 0.8rem;
+  z-index: 100;
+}
+
+.mobile-panel {
+  display: none;
 }
 
 .compose-head {
@@ -894,13 +899,15 @@ select:focus {
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 91;
+    top: auto;
+    z-index: 100;
     border-radius: 16px 16px 0 0;
     max-height: 75vh;
     overflow-y: auto;
     transform: translateY(100%);
     transition: transform 250ms ease;
     padding-bottom: calc(0.6rem + env(safe-area-inset-bottom, 0));
+    pointer-events: auto;
   }
 
   .compose-panel.open {
@@ -911,6 +918,8 @@ select:focus {
     display: inline-block;
     padding: 0.35rem 0.5rem;
     font-size: 0.75rem;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .compose-head h2 {
@@ -938,7 +947,7 @@ select:focus {
     position: fixed;
     right: 0.8rem;
     bottom: calc(0.8rem + env(safe-area-inset-bottom, 0));
-    z-index: 92;
+    z-index: 89;
     border: 0;
     border-radius: 999px;
     padding: 0.6rem 0.9rem;

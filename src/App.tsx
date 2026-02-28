@@ -409,14 +409,27 @@ function App() {
             </button>
           </div>
         </section>
+      </main>
 
-        <aside className={`compose-panel ${showAddPanel ? 'open' : ''}`}>
+      {/* 添加快递面板 */}
+      <aside
+        className={`compose-panel ${showAddPanel ? 'open' : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
           <div className="compose-head">
             <div>
               <h2>添加快递</h2>
               <p>仅需单号，系统自动查询物流</p>
             </div>
-            <button type="button" className="ghost-btn close-compose" onClick={() => setShowAddPanel(false)}>
+            <button
+              type="button"
+              className="ghost-btn close-compose"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setShowAddPanel(false)
+              }}
+            >
               关闭
             </button>
           </div>
@@ -439,7 +452,6 @@ function App() {
             </button>
           </form>
         </aside>
-      </main>
 
       {/* 详情弹窗 */}
       {detailShipment && (
