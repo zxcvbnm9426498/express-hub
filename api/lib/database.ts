@@ -19,6 +19,7 @@ export async function initDatabase() {
       latest_context TEXT NOT NULL DEFAULT '',
       eta TEXT NOT NULL,
       items TEXT NOT NULL DEFAULT 'API自动识别',
+      remark TEXT NOT NULL DEFAULT '',
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL DEFAULT ''
     )
@@ -39,6 +40,13 @@ export async function initDatabase() {
   await sql`CREATE INDEX IF NOT EXISTS idx_shipments_carrier ON shipments(carrier)`
   await sql`CREATE INDEX IF NOT EXISTS idx_shipments_created_at ON shipments(created_at DESC)`
   await sql`CREATE INDEX IF NOT EXISTS idx_tracking_events_shipment ON tracking_events(shipment_id, id DESC)`
+
+  // 添加 remark 列（如果不存在）
+  try {
+    await sql`ALTER TABLE shipments ADD COLUMN IF NOT EXISTS remark TEXT NOT NULL DEFAULT ''`
+  } catch {
+    // 列可能已存在，忽略错误
+  }
 }
 
 // 获取当前时间字符串

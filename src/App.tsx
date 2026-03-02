@@ -23,6 +23,7 @@ interface Shipment {
   routeFrom: string
   routeTo: string
   eta: string
+  remark: string
   createdAt: string
   updatedAt: string
   events: TrackingEvent[]
@@ -105,6 +106,7 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [listError, setListError] = useState('')
   const [trackingNumber, setTrackingNumber] = useState('')
+  const [remark, setRemark] = useState('')
   const [formError, setFormError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [syncingId, setSyncingId] = useState<number | null>(null)
@@ -223,11 +225,12 @@ function App() {
       const response = await fetch(buildApiUrl('/api/shipments'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trackingNumber: trackingNumber.trim() }),
+        body: JSON.stringify({ trackingNumber: trackingNumber.trim(), remark: remark.trim() }),
       })
       await parseJson<ShipmentResponse>(response)
 
       setTrackingNumber('')
+      setRemark('')
       setShowAddPanel(false)
       if (page === 1) {
         setReloadToken((value) => value + 1)
@@ -387,6 +390,7 @@ function App() {
                   <div className="tag-body">
                     <h3 className="tag-number">{item.trackingNumber}</h3>
                     <p className="tag-carrier">{item.carrierName}</p>
+                    {item.remark && <p className="tag-remark">{item.remark}</p>}
                   </div>
                   <div className="tag-footer">
                     <p className="tag-latest">{item.latestContext}</p>
@@ -464,6 +468,16 @@ function App() {
               />
             </label>
 
+            <label>
+              <span>备注（选填）</span>
+              <input
+                type="text"
+                value={remark}
+                onChange={(event) => setRemark(event.target.value)}
+                placeholder="例如：给妈妈买的药"
+              />
+            </label>
+
             {formError && <p className="form-error">{formError}</p>}
 
             <button type="submit" className="submit-btn" disabled={submitting}>
@@ -513,6 +527,12 @@ function App() {
                 <strong>更新时间</strong>
                 <span>{detailShipment.updatedAt || detailShipment.createdAt}</span>
               </div>
+              {detailShipment.remark && (
+                <div className="meta-item full">
+                  <strong>备注</strong>
+                  <span className="remark-text">{detailShipment.remark}</span>
+                </div>
+              )}
             </div>
 
             <div className="progress-track">

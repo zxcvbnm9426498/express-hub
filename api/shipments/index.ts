@@ -46,21 +46,21 @@ async function handleList(req: VercelRequest, res: VercelResponse) {
 
   if (statusFilter && keyword) {
     const like = `%${keyword}%`
-    countQuery = `SELECT COUNT(*) AS total FROM shipments WHERE status = $1 AND (tracking_number ILIKE $2 OR carrier ILIKE $2 OR latest_context ILIKE $2)`
-    dataQuery = `SELECT id, carrier, carrier_code, tracking_number, shipping_date, route_from, route_to, status, latest_update, latest_context, eta, created_at, updated_at FROM shipments WHERE status = $1 AND (tracking_number ILIKE $2 OR carrier ILIKE $2 OR latest_context ILIKE $2) ORDER BY created_at DESC, id DESC LIMIT $3 OFFSET $4`
+    countQuery = `SELECT COUNT(*) AS total FROM shipments WHERE status = $1 AND (tracking_number ILIKE $2 OR carrier ILIKE $2 OR latest_context ILIKE $2 OR remark ILIKE $2)`
+    dataQuery = `SELECT id, carrier, carrier_code, tracking_number, shipping_date, route_from, route_to, status, latest_update, latest_context, eta, remark, created_at, updated_at FROM shipments WHERE status = $1 AND (tracking_number ILIKE $2 OR carrier ILIKE $2 OR latest_context ILIKE $2 OR remark ILIKE $2) ORDER BY created_at DESC, id DESC LIMIT $3 OFFSET $4`
     params = [statusFilter, like, pageSize, (page - 1) * pageSize]
   } else if (statusFilter) {
     countQuery = `SELECT COUNT(*) AS total FROM shipments WHERE status = $1`
-    dataQuery = `SELECT id, carrier, carrier_code, tracking_number, shipping_date, route_from, route_to, status, latest_update, latest_context, eta, created_at, updated_at FROM shipments WHERE status = $1 ORDER BY created_at DESC, id DESC LIMIT $2 OFFSET $3`
+    dataQuery = `SELECT id, carrier, carrier_code, tracking_number, shipping_date, route_from, route_to, status, latest_update, latest_context, eta, remark, created_at, updated_at FROM shipments WHERE status = $1 ORDER BY created_at DESC, id DESC LIMIT $2 OFFSET $3`
     params = [statusFilter, pageSize, (page - 1) * pageSize]
   } else if (keyword) {
     const like = `%${keyword}%`
-    countQuery = `SELECT COUNT(*) AS total FROM shipments WHERE tracking_number ILIKE $1 OR carrier ILIKE $1 OR latest_context ILIKE $1`
-    dataQuery = `SELECT id, carrier, carrier_code, tracking_number, shipping_date, route_from, route_to, status, latest_update, latest_context, eta, created_at, updated_at FROM shipments WHERE tracking_number ILIKE $1 OR carrier ILIKE $1 OR latest_context ILIKE $1 ORDER BY created_at DESC, id DESC LIMIT $2 OFFSET $3`
+    countQuery = `SELECT COUNT(*) AS total FROM shipments WHERE tracking_number ILIKE $1 OR carrier ILIKE $1 OR latest_context ILIKE $1 OR remark ILIKE $1`
+    dataQuery = `SELECT id, carrier, carrier_code, tracking_number, shipping_date, route_from, route_to, status, latest_update, latest_context, eta, remark, created_at, updated_at FROM shipments WHERE tracking_number ILIKE $1 OR carrier ILIKE $1 OR latest_context ILIKE $1 OR remark ILIKE $1 ORDER BY created_at DESC, id DESC LIMIT $2 OFFSET $3`
     params = [like, pageSize, (page - 1) * pageSize]
   } else {
     countQuery = `SELECT COUNT(*) AS total FROM shipments`
-    dataQuery = `SELECT id, carrier, carrier_code, tracking_number, shipping_date, route_from, route_to, status, latest_update, latest_context, eta, created_at, updated_at FROM shipments ORDER BY created_at DESC, id DESC LIMIT $1 OFFSET $2`
+    dataQuery = `SELECT id, carrier, carrier_code, tracking_number, shipping_date, route_from, route_to, status, latest_update, latest_context, eta, remark, created_at, updated_at FROM shipments ORDER BY created_at DESC, id DESC LIMIT $1 OFFSET $2`
     params = [pageSize, (page - 1) * pageSize]
   }
 
@@ -102,8 +102,9 @@ async function handleList(req: VercelRequest, res: VercelResponse) {
 }
 
 async function handleCreate(req: VercelRequest, res: VercelResponse) {
-  const { trackingNumber } = req.body || {}
+  const { trackingNumber, remark } = req.body || {}
   const trackingNumberTrimmed = String(trackingNumber || '').trim()
+  const remarkTrimmed = String(remark || '').trim()
 
   if (trackingNumberTrimmed.length < 6) {
     return res.status(400).json({ message: '请填写有效的快递单号。' })
@@ -129,11 +130,11 @@ async function handleCreate(req: VercelRequest, res: VercelResponse) {
       INSERT INTO shipments (
         carrier, carrier_code, tracking_number, shipping_date,
         route_from, route_to, status, latest_update,
-        latest_context, eta, created_at, updated_at
+        latest_context, eta, remark, created_at, updated_at
       ) VALUES (
         ${snapshot.carrierName}, ${snapshot.carrierCode}, ${trackingNumberTrimmed}, ${shippingDate},
         ${snapshot.routeFrom}, ${snapshot.routeTo}, ${snapshot.status}, ${latestUpdate},
-        ${snapshot.latestContext}, ${snapshot.eta}, ${now}, ${now}
+        ${snapshot.latestContext}, ${snapshot.eta}, ${remarkTrimmed}, ${now}, ${now}
       )
       RETURNING id
     `

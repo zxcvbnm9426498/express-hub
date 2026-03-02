@@ -310,6 +310,15 @@ select:focus {
   font-size: 0.8rem;
 }
 
+.tag-remark {
+  margin: 0.2rem 0 0;
+  color: #8a9ba8;
+  font-size: 0.72rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .tag-footer {
   margin-bottom: 0.5rem;
 }
@@ -489,6 +498,11 @@ select:focus {
 .meta-item span {
   color: #1d3749;
   font-size: 0.85rem;
+}
+
+.meta-item .remark-text {
+  color: #6a8090;
+  font-style: italic;
 }
 
 .progress-track {

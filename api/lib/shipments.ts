@@ -14,6 +14,7 @@ export interface ShipmentRow {
   latest_update: string
   latest_context: string
   eta: string
+  remark: string
   created_at: string
   updated_at: string
 }
@@ -38,6 +39,7 @@ export interface Shipment {
   routeFrom: string
   routeTo: string
   eta: string
+  remark: string
   createdAt: string
   updatedAt: string
   events: Array<{
@@ -52,7 +54,7 @@ export async function getShipmentById(id: number): Promise<Shipment | null> {
   const { rows } = await sql<ShipmentRow>`
     SELECT id, carrier, carrier_code, tracking_number, shipping_date,
            route_from, route_to, status, latest_update, latest_context,
-           eta, created_at, updated_at
+           eta, remark, created_at, updated_at
     FROM shipments
     WHERE id = ${id}
   `
@@ -114,6 +116,7 @@ export function mapRowToShipment(row: ShipmentRow, events: TrackingEventRow[]): 
     routeFrom: row.route_from,
     routeTo: row.route_to,
     eta: row.eta,
+    remark: row.remark || '',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     events: events.map((event) => ({
