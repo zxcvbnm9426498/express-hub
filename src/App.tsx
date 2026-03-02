@@ -108,9 +108,9 @@ function App() {
   const [formError, setFormError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [syncingId, setSyncingId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
   const [showAddPanel, setShowAddPanel] = useState(false)
-  const [copiedId, setCopiedId] = useState<number | null>(null)
 
   // 弹窗状态
   const [detailShipment, setDetailShipment] = useState<Shipment | null>(null)
@@ -181,13 +181,31 @@ function App() {
     setReloadToken((value) => value + 1)
   }
 
-  async function copyTrackingNumber(value: string, id: number) {
+  async function deleteShipment(id: number) {
+    if (!window.confirm('确定要删除这条快递记录吗？')) {
+      return
+    }
+
+    setListError('')
+    setDeletingId(id)
     try {
-      await navigator.clipboard.writeText(value)
-      setCopiedId(id)
-      window.setTimeout(() => setCopiedId((current) => (current === id ? null : current)), 1200)
-    } catch {
-      setListError('复制失败，请手动复制单号。')
+      const response = await fetch(buildApiUrl(`/api/shipments/${id}`), {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.message ?? '删除失败')
+      }
+      // 如果删除的是当前详情弹窗中的快递，关闭弹窗
+      if (detailShipment?.id === id) {
+        setDetailShipment(null)
+      }
+      setReloadToken((value) => value + 1)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : '删除失败'
+      setListError(message)
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -377,10 +395,11 @@ function App() {
                   <div className="tag-actions" onClick={(e) => e.stopPropagation()}>
                     <button
                       type="button"
-                      className="tag-btn"
-                      onClick={() => void copyTrackingNumber(item.trackingNumber, item.id)}
+                      className="tag-btn danger"
+                      onClick={() => void deleteShipment(item.id)}
+                      disabled={deletingId === item.id}
                     >
-                      {copiedId === item.id ? '已复制' : '复制'}
+                      {deletingId === item.id ? '删除中' : '删除'}
                     </button>
                     <button
                       type="button"
@@ -521,10 +540,11 @@ function App() {
               </button>
               <button
                 type="button"
-                className="ghost-btn"
-                onClick={() => void copyTrackingNumber(detailShipment.trackingNumber, detailShipment.id)}
+                className="ghost-btn danger"
+                onClick={() => void deleteShipment(detailShipment.id)}
+                disabled={deletingId === detailShipment.id}
               >
-                {copiedId === detailShipment.id ? '已复制' : '复制单号'}
+                {deletingId === detailShipment.id ? '删除中...' : '删除'}
               </button>
             </div>
 

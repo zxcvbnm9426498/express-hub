@@ -368,6 +368,21 @@ select:focus {
   cursor: not-allowed;
 }
 
+.tag-btn.danger {
+  background: #fff5f5;
+  border-color: #f5c2c2;
+  color: #b3261e;
+}
+
+.tag-btn.danger:hover {
+  background: #fee2e2;
+}
+
+.tag-btn.danger:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
 /* 详情弹窗 */
 .detail-modal {
   position: fixed;
@@ -589,6 +604,15 @@ select:focus {
 .ghost-btn:disabled {
   opacity: 0.58;
   cursor: not-allowed;
+}
+
+.ghost-btn.danger {
+  background: #fff5f5;
+  color: #b3261e;
+}
+
+.ghost-btn.danger:hover {
+  background: #fee2e2;
 }
 
 .submit-btn {
